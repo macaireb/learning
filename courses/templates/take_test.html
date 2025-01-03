@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Create Test</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Create a New Test</p>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="row>">
+        <center>
+            <div class="col-6">
+                <strong> Test: {{test.title}}</strong>
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if question.type == 1 %}
+                        <p>{{ question }}</p>
+                        {{ form.answer }}
+                    {% else %}
+                        <p>{{ question }}</p>
+                        {% for radio in form.answer %}
+                            <div class="form-check">
+                                {{ radio }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                <br/><br/>
+                </form>
+                <br/><br/>
+                <br/><br/>
+                <br/><br/>
+            </div>
+        </center>
+    </div>
+</div>
+{% endblock %}

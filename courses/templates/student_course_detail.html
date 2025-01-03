@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Dashboard </h1>
+            <p class="lead fw-normal text-white-50 mb-0">View your student dashboard</p>
+        </div>
+    </div>
+</header>
+<br/>
+<div class="container">
+    <div class="row>">
+        <div class="col-md-6 offset-md-3">
+                {% if course %}
+                <div class="card">
+                    <table class="table table-striped table-hover table-bordered">
+                      <thead class="table-dark">
+                        <tr>
+                          <th scope="col">Assigned Course</th>
+                          <th scope="col">Course Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                            <td>{{course.title}}</td>
+                            <td>
+                                {{course.description|truncatechars:30}}
+                            </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                {% endif %}
+                {% if assignments %}
+                    <table class="table table-striped table-hover table-bordered">
+                      <thead class="table-dark">
+                        <tr>
+                          <th scope="col">Assigned Tests</th>
+                          <th scope="col">Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for assignment in assignments %}
+                        <tr>
+                            <td>{{assignment.test.title}}</td>
+                            <td>
+                                {{assignment.status}}
+                            </td>
+                            {% if assignment.status == 'pending' or assignment.status == 'Pending' %}
+                            <td>
+                                <a href="{% url 'take_test' assignment.id %}" class="btn btn-sm btn-success">
+                                Take test
+                                </a>
+                            </td>
+                            {% endif %}
+                            {% if assignment.status == 'graded' or assignment.status == 'Graded' %}
+                            <td>
+                                <a href="#" class="btn btn-sm btn-success">
+                                View result
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Assignment Result </h1>
+            <p class="lead fw-normal text-white-50 mb-0">View your assignment result</p>
+        </div>
+    </div>
+</header>
+<br/>
+<div class="container">
+    <div class="row>">
+        <div class="col-md-6 offset-md-3">
+                {% if answers %}
+                <div class="card">
+                    <table class="table table-striped table-hover table-bordered">
+                      <thead class="table-dark">
+                        <tr>
+                          <th scope="col">Question Text</th>
+                          <th scope="col">Student Answer</th>
+                            <th scope="col">Correct Answer</th>
+
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for answer in answers %}
+                        <tr>
+                            <td>{{answer.question.text}}</td>
+                            <td>
+                                {{answer.answer}}
+                            </td>
+                            <td>
+                                {{answer.question.correct_answer}}
+                            </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+                {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+        <!-- Header-->
+    <header class="bg-dark py-5">
+        <div class="container px-4 px-lg-5 my-5">
+            <div class="text-center text-white">
+                <h1 class="display-4 fw-bolder">Add question </h1>
+                <p class="lead fw-normal text-white-50 mb-0">Add question your tests</p>
+            </div>
+        </div>
+    </header>
+<br/>
+    <div class="container">
+        <div class="row>">
+            <div class="col-md-6 offset-md-3">
+                {% if test %}
+                    <div class="card">
+                        <h5 class="card-title">{{test.title}}</h5>
+                        <h6 class="card-subtitle mb-2 text-body-secondary">Course: {{test.course}}</h6>
+                        {% if form %}
+                            <strong>Create New question</strong>
+                                <form method="POST" action=" {% url 'create_question' test.id %} ">
+                                    {% csrf_token %}
+                                    {{form.as_p}}
+                                    <br/><br/>
+                                    <button type="submit" class="btn btn-secondary">
+                                        Create Question
+                                    </button>
+                                <br/><br/>
+                                </form>
+                        {% else %}
+                            <br/><br/><br/><br/>
+                            <p class="card-text -bs-info-text-emphasis">No questions exist</p>
+                                <a href="#" class="btn btn-primary">Add questions to test</a>
+                        {% endif %}
+                      </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+<script>
+    $(document).on('change', '#id_type', function (e) {
+    var selectedValue = $(this).val(); // Get the selected value
+    // Hide all specific elements
+
+    $('#id_option_one, #id_option_two, #id_option_three, #id_option_four, #id_option_five').hide();
+
+    // Show the corresponding elements based on the selected value
+    if (selectedValue === "1") {
+        $('#id_option_one').show();
+        $('#id_option_one').val('');
+        $('#id_option_two').val('');
+        $('#id_correct_answer').val('1');
+    }
+    else if (selectedValue === "2") {
+        $('#id_option_one, #id_option_two').show();
+        $('#id_option_one').val('True');
+        $('#id_option_two').val('False');
+    }
+    else if (selectedValue === "3") {
+        $('#id_option_one, #id_option_two, #id_option_three, #id_option_four, #id_option_five').show();
+        $('#id_option_one').val('');
+        $('#id_option_two').val('');
+    }
+});
+</script>
+{% endblock %}

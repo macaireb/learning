@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+        <!-- Header-->
+    <header class="bg-dark py-5">
+        <div class="container px-4 px-lg-5 my-5">
+            <div class="text-center text-white">
+                <h1 class="display-4 fw-bolder">Course Details </h1>
+                <p class="lead fw-normal text-white-50 mb-0">View course's details</p>
+            </div>
+        </div>
+    </header>
+<br/>
+    <div class="container">
+        <div class="row>">
+            <div class="col-md-6 offset-md-3">
+                    <div class="card border-dark ">
+                        <h3 class="card-title">Course: {{course.title}}</h3>
+                            <p class="text-body-secondary"> Description: {{course.description}}</p>
+                        <a href="{% url 'update_course' course.id %}" class="btn btn-sm btn-primary">Update Course
+                        </a>
+                        <a href="{% url 'delete_course' course.id %}" class="btn btn-sm btn-danger">Delete Course
+                        </a>
+                        {% if course.instructor.all %}
+                        <table class="table table-striped table-hover table-bordered">
+                          <thead class="table-dark">
+                            <tr>
+                              <th scope="col">Assigned Instructors</th>
+                                {% if multiple_instructors %}
+                              <th scope="col">Unassign Instructor</th>
+                                {% endif %}
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for instructor in course.instructor.all %}
+                            <tr>
+                                {% if instructor.first_name and instructor.last_name %}
+                                    <td>{{instructor.first_name}} {{instructor.last_name}}</td>
+                                {% else %}
+                                    <td>{{instructor.username}}</td>
+                                {% endif %}
+                                {% if multiple_instructors %}
+                                <td><a href="{% url 'unassign_instructor' course.id instructor.id %}" class="btn btn-sm btn-primary">Unassign instructor</a></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                          </tbody>
+                        </table>
+                        {% else %}
+                        <strong>No instructors assigned, assign one</strong>
+                        {% endif %}
+                        <br/><br/><br/>
+                        {% if unassigned_instructors %}
+                        <table class="table table-striped table-hover table-bordered">
+                          <thead class="table-dark">
+                            <tr>
+                              <th scope="col">Not Assigned Instructors</th>
+                                <th scope="col"> Assign Instructor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for instructor in unassigned_instructors %}
+                            <tr>
+                                {% if instructor.first_name and instructor.last_name %}
+                                    <td>{{instructor.first_name}} {{instructor.last_name}}</td>
+                                {% else %}
+                                    <td>{{instructor.username}}</td>
+                                {% endif %}
+                                <td><a href="{% url 'assign_instructor' course.id instructor.id %}" class="btn btn-sm btn-primary">Assign instructor</a></td>
+                            </tr>
+                        {% endfor %}
+                          </tbody>
+                        </table>
+                        <br/><br/><br/>
+                        {% endif %}
+                        {% if course.students.all %}
+                        <table class="table table-striped table-hover table-bordered">
+                          <thead class="table-dark">
+                            <tr>
+                              <th scope="col">Enrolled Students</th>
+                                <th scope="col">Unenroll Student</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for student in course.students.all %}
+                            <tr>
+                                {% if student.first_name and student.last_name %}
+                                    <td>{{student.first_name}} {{student.last_name}}</td>
+                                {% else %}
+                                    <td>{{student.username}}</td>
+                                {% endif %}
+                                    <td><a href="{% url 'unenroll_student' course.id student.id %}" class="btn btn-sm btn-success">Unenroll Student</a></td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                            <br/><br/><br/><br/>
+                        {% else %}
+                        <strong> No students enrolled, enroll some</strong>
+                        {% endif %}
+                        {% if unenrolled_students %}
+                        <table class="table table-striped table-hover table-bordered">
+                          <thead class="table-dark">
+                            <tr>
+                              <th scope="col">Un-enrolled Students</th>
+                                 <th scope="col">Enroll Student</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for student in unenrolled_students %}
+                            <tr>
+                                {% if student.first_name and student.last_name %}
+                                    <td>{{student.first_name}} {{student.last_name}}</td>
+                                {% else %}
+                                    <td>{{student.username}}</td>
+                                {% endif %}
+                                    <td><a href="{% url 'enroll_student' course.id student.id %}" class="btn btn-sm btn-success">Enroll Student</a></td>
+                            </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                        {% endif %}
+                        <br/><br/><br/>
+                        {% if tests %}
+                        <table class="table table-striped table-hover table-bordered">
+                          <thead class="table-dark">
+                            <tr>
+                              <th scope="col">Test Title</th>
+                                <th scope="col"> Delete Test</th>
+                                <th scope="col"> Change test's course</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for test in tests %}
+                            <tr>
+                                <td>{{test.title}}</td>
+                                <td><a href="{% url 'delete_test' test.id %}" class="btn btn-sm btn-danger">
+                                    Delete Test</a></td>
+                                {% if multiple_courses %}
+                                    <td><a href="#" class="btn btn-sm btn-primary">Move Test</a></td>
+                                {% else %}
+                                    <td>
+                                        There is no other course to move test to
+                                        <a href="{% url 'create_course' %}" class="btn btn-sm btn-primary">Create course</a></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                          </tbody>
+                        </table>
+                          {% else %}
+                            {% if multiple_courses %}
+                            <strong>There are no tests assigned to this course,
+                                <a href="{% url 'create_test' %}" class="btn btn-sm btn-primary">Create Test</a>
+                            </strong>
+                            {% else %}
+                            <strong>There are no tests assigned to this course,
+                                <a href="{% url 'create_test' %}" class="btn btn-sm btn-primary">Create Test</a>
+                                You will also need to create an additional course to move your new Test to
+                            </strong>
+                            {% endif %}
+                        <br/><br/><br/>
+                        {% endif %}
+                    </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

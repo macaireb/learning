@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+        <!-- Header-->
+    <header class="bg-dark py-5">
+        <div class="container px-4 px-lg-5 my-5">
+            <div class="text-center text-white">
+                <h1 class="display-4 fw-bolder">Grading </h1>
+                <p class="lead fw-normal text-white-50 mb-0">Grading Test: {{assignment.test.title }}</p>
+            </div>
+        </div>
+    </header>
+<br/>
+    <div class="container">
+        <div class="row>">
+            <div class="col-md-8 offset-md-3">
+                    <div class="card border-dark ">
+                        <form method="POST" action="{% url 'grade_test' assignment.id %}">
+                            {% csrf_token %}
+                            {{ formset.management_form }}
+                        <table class="table table-striped table-hover table-bordered">
+                          <thead class="table-dark">
+                            <tr>
+                              <th scope="col">Question</th>
+                              <th scope="col">Answer</th>
+                              <th scope="col">Correct</th>
+                                <th scope="col">Not Correct</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for form in formset %}
+                                <tr>
+                                    <td>{{ form.instance.question.text }}</td>
+                                    <td>{{ form.instance.answer }}</td>
+                                    <div class="form-check form-switch">
+
+                                        {{ form.id}}
+                                        {% for radio in form.is_correct %}
+                                        <td>
+                                            {{ radio }}
+                                        </td>
+                                        {% endfor %}
+                                    </div>
+                                </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                            <button type="submit" class="btn btn-primary">Grade</button>
+                        </form>
+                        <br/><br/><br/>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

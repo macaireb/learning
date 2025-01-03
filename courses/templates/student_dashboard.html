@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Dashboard </h1>
+            <p class="lead fw-normal text-white-50 mb-0">View your student dashboard</p>
+        </div>
+    </div>
+</header>
+<br/>
+<div class="container">
+    <div class="row>">
+        <div class="col-md-6 offset-md-3">
+                {% if courses %}
+                <div class="card">
+                    <table class="table table-striped table-hover table-bordered">
+                      <thead class="table-dark">
+                        <tr>
+                          <th scope="col">Assigned Course</th>
+                          <th scope="col">Course Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for course in courses %}
+                        <tr>
+                            <td><a href="{% url 'student_course_detail' course.id %}" class="btn btn-sm btn-primary">
+                                {{course.title}} Details</a></td>
+                            <td>
+                                {{course.description|truncatechars:30}}
+                            </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                {% endif %}
+                {% if assignments %}
+                    <table class="table table-striped table-hover table-bordered">
+                      <thead class="table-dark">
+                        <tr>
+                          <th scope="col">Assigned Tests</th>
+                          <th scope="col">Course of test</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for assignment in assignments %}
+                        <tr>
+                            <td>{{assignment.test.title}}</td>
+                            <td>
+                                {{assignment.course.title}}
+                            </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

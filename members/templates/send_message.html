@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+        <!-- Header-->
+        <header class="bg-dark py-2">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h2 class="display-4 fw-bolder">Messages</h2>
+                    <p class="lead fw-normal text-white-50 mb-0">Send a message</p>
+                </div>
+            </div>
+        </header>
+        <!-- Section-->
+    <div class="container py-4" id="chat-container">
+        <div class="row">
+            <!-- Conversation List -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        Conversations
+                    </div>
+                    <div class="list-group" id="conversation-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="current-user" value="{{ current_user }}">
+
+            <!-- Chat Window -->
+            <div class="col-md-8">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        Chat
+                    </div>
+                    <div class="card-body" id="chat-window" style="height: 400px; overflow-y: auto;">
+                        <!-- Chat messages dynamically appended here -->
+                    </div>
+                    <div class="card-footer">
+                        <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+                        <div class="input-group">
+                            <div class="mb-3">
+                                <label for="recipient-input" class="form-label">Recipient</label>
+                                <select id="recipient-input" class="form-select" name="recipient">
+                                    <option value="" disabled selected>Select a recipient</option>
+                                    {% for recipient in recipients %}
+                                    <option value="{{ recipient.id }}">{{ recipient.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <textarea class="form-control" id="message-input" placeholder="Type your message here..." rows="1"></textarea>
+                            <button class="btn btn-primary" id="send-button">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    fetchConversations(); // Fetch and populate the conversation list
+    setupEventListeners(); // Attach all event listeners
+});
+
+    // Function to send a message to the backend
+async function sendMessage(recipient, content) {
+    const csrfToken = getCSRFToken(); // Fetch CSRF token (see function below)
+    const currentUser = document.getElementById('current-user').value; // Fetch current user
+
+    console.log('Selected Recipient ID:', recipient);
+    try {
+        const response = await fetch('/send_message/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken // Include the CSRF token for Django
+            },
+            body: JSON.stringify({
+                recipient: recipient, // Pass the recipient's username
+                content: content      // Pass the message content
+            })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            console.log(data.timestamp);
+
+            // Update the chat window
+            const message = {
+                sender: currentUser,
+                timestamp: data.timestamp,
+                content: content
+            };
+            appendMessageToChatWindow(message, currentUser);
+        } else {
+            const error = await response.json();
+            console.error('Error sending message:', error);
+            alert('Failed to send message: ' + error.error);
+        }
+    } catch (err) {
+        console.error('Network error:', err);
+        alert('A network error occurred. Please try again.');
+    }
+}
+
+// Function to fetch messages for a selected conversation
+function fetchMessages(conversationId) {
+    fetch(`/api/get_messages/${conversationId}/`)
+        .then(response => response.json())
+        .then(data => {
+            clearChatWindow();
+
+
+            const currentUser = data.current_user; // Get the logged-in user's username
+            data.messages.forEach(message => {
+                appendMessageToChatWindow(message, currentUser); // Use your defined function
+            });
+        })
+        .catch(error => console.error('Error fetching messages:', error));
+}
+
+// Helper to append a message to the chat window
+function appendMessageToChatWindow(message, currentUser) {
+    const chatWindow = document.getElementById('chat-window');
+
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('chat-message', 'd-flex', 'mb-2'); // Add any relevant Bootstrap or custom classes
+
+    // Format the timestamp
+    const formattedTimestamp = formatTimestamp(message.timestamp);
+
+    // Check if the message sender is the logged-in user
+    if (message.sender === currentUser) {
+        messageElement.classList.add('justify-content-end');
+        messageElement.innerHTML = `
+            <div class="bg-primary text-white rounded p-2">
+                <p class="mb-0">${message.content}</p>
+                <small class="text-light">${formattedTimestamp}</small>
+            </div>
+        `;
+    } else {
+        messageElement.classList.add('justify-content-start');
+        messageElement.innerHTML = `
+            <div class="bg-light text-dark rounded p-2">
+                <span class="fw-bold">${message.sender}</span>
+                <p class="mb-0">${message.content}</p>
+                <small class="text-muted">${formattedTimestamp}</small>
+            </div>
+        `;
+    }
+
+    chatWindow.appendChild(messageElement);
+    chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to the bottom
+}
+
+// Timestamp formatting function
+function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    });
+}
+
+// Helper to clear the chat window
+function clearChatWindow() {
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.innerHTML = ''; // Remove all child elements
+}
+
+// Helper to get CSRF token from the page's cookies
+function getCSRFToken() {
+    const csrfToken = document.getElementById("csrf-token").value;
+    return csrfToken;
+}
+
+// Function to fetch conversations and populate the conversation list
+function fetchConversations() {
+    fetch('/api/get_conversations/') // Update with your actual API endpoint
+        .then(response => response.json())
+        .then(data => {
+            const conversationList = document.getElementById('conversation-list');
+            conversationList.innerHTML = ''; // Clear the current list
+
+            data.conversations.forEach(conversation => {
+                const conversationElement = document.createElement('div');
+                conversationElement.classList.add('conversation-item', 'list-group-item'); // Add Bootstrap classes
+                conversationElement.setAttribute('data-conversation-id', conversation.id);
+                conversationElement.setAttribute('data-recipient-id', conversation.recipient_id);
+                conversationElement.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span>${conversation.recipient}</span>
+                    </div>
+                `;
+                conversationList.appendChild(conversationElement);
+            });
+        })
+        .catch(error => console.error('Error fetching conversations:', error));
+}
+
+function setupEventListeners() {
+    // Conversation List: Click to fetch messages
+    const conversationList = document.getElementById('conversation-list');
+    if (conversationList) {
+        conversationList.addEventListener('click', (event) => {
+            const target = event.target.closest('.conversation-item');
+            if (target) {
+                const conversationId = target.getAttribute('data-conversation-id');
+                const recipientId = target.getAttribute('data-recipient-id');
+
+                highlightConversation(conversationId);
+                document.getElementById('recipient-input').value = recipientId;
+                fetchMessages(conversationId);
+            }
+        });
+    }
+
+    // Recipient Input: Change to update conversation list and chat
+    const recipientInput = document.getElementById('recipient-input');
+    if (recipientInput) {
+        recipientInput.addEventListener('change', () => {
+            const recipientId = recipientInput.value;
+            highlightConversationByRecipient(recipientId);
+            const conversationId = getConversationIdByRecipient(recipientId);
+            if (conversationId) {
+                fetchMessages(conversationId);
+            } else {
+                clearChatWindow();
+            }
+        });
+    }
+
+    // Send Button: Click to send a message
+    const sendButton = document.getElementById('send-button');
+    if (sendButton) {
+        sendButton.addEventListener('click', () => {
+            const recipient = document.getElementById('recipient-input').value;
+            const content = document.getElementById('message-input').value;
+
+            if (recipient && content) {
+                sendMessage(recipient, content);
+                document.getElementById('message-input').value = '';
+            } else {
+                alert('Recipient and message content cannot be empty!');
+            }
+        });
+    }
+}
+
+// Highlight the selected conversation in the list
+function highlightConversation(conversationId) {
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    conversationItems.forEach((item) => {
+        item.classList.toggle('active', item.getAttribute('data-conversation-id') === conversationId);
+    });
+}
+
+// Highlight conversation by recipient ID
+function highlightConversationByRecipient(recipientId) {
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    conversationItems.forEach((item) => {
+        item.classList.toggle('active', item.getAttribute('data-recipient-id') === recipientId);
+    });
+}
+
+// Get conversation ID by recipient ID
+function getConversationIdByRecipient(recipientId) {
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    for (const item of conversationItems) {
+        if (item.getAttribute('data-recipient-id') === recipientId) {
+            return item.getAttribute('data-conversation-id');
+        }
+    }
+    return null;
+}
+</script>
+
+{% endblock %}
